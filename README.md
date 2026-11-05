@@ -83,3 +83,9 @@ anna-app apps release 1.0.2 --account https://staging.anna.partners
 ## 限制
 
 扫描件OCR、自动重绘图表、字符级富文本、公式转可编辑公式、动画和多人协作暂不支持。PDF阅读顺序与视觉定位依赖版式，复杂布局需人工核验。视觉模型不可用时保留基于图注的AI推荐，用户手动框选。平台宿主下载之外还提供主动保存文件按钮，兼容浏览器阻止自动下载的情况。PPTX字体未嵌入，打开后的字体和换行可能因系统而异。
+
+当前平台状态：1.0.2 已提交审核（`pending_review`），尚未公开上架。GitHub Actions 因账号计费锁定未启动，本机验证均已通过，详见[验证记录](docs/VALIDATION.md)。
+
+编辑器预览（本地合成示例）：
+
+![编辑器](docs/images/local-editor.png)
