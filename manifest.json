@@ -1,0 +1,50 @@
+{
+  "schema": 3,
+  "required_executas": [],
+  "storage": {
+    "kv": true,
+    "files": true,
+    "scopes": {}
+  },
+  "tags": ["research", "presentation", "pdf"],
+  "system_prompt_addendum": "Paper2Slides converts text-based research PDFs into editable presentation decks. When asked to use the app, open its main view. The user uploads their PDF in the app; do not fabricate paper contents.",
+  "ui": {
+    "bundle": {
+      "format": "static-spa",
+      "entry": "index.html",
+      "external_origins": [
+        "https://5244841125c1e42784f5bda924751be6.r2.cloudflarestorage.com"
+      ]
+    },
+    "views": [
+      {
+        "name": "main",
+        "title": "Paper2Slides",
+        "default": true,
+        "default_size": {
+          "w": 1440,
+          "h": 900
+        },
+        "min_size": {
+          "w": 1000,
+          "h": 650
+        },
+        "single_instance": true
+      }
+    ],
+    "host_api": {
+      "llm": ["complete"],
+      "storage": ["get", "set", "list", "delete"],
+      "files": [
+        "upload_init",
+        "upload_finalize",
+        "download_url",
+        "download",
+        "list",
+        "delete"
+      ],
+      "window": ["set_title"]
+    },
+    "csp_overrides": {}
+  }
+}

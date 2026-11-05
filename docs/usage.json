@@ -1,0 +1,145 @@
+{
+  "date": "2026-11-06",
+  "platform": "Anna staging",
+  "paper": "arXiv:1706.03762",
+  "completedProjectCU": 8.470689655172412,
+  "earlierFormatTestsCU": 4.278448275862068,
+  "knownTotalCU": 12.74913793103448,
+  "notes": "记录实际接口报告扣费，包含失败重试；不代表账户余额。未包含任何凭证、存储签名URL或用户文件。",
+  "calls": [
+    {
+      "purpose": "识别正文范围 1–15 页",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 7742,
+      "outputTokens": 116,
+      "cu": 0.9620689655172413,
+      "latencyMs": 3579,
+      "at": "2026-11-05T17:34:26.481Z"
+    },
+    {
+      "purpose": "复核正文边界",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 5523,
+      "outputTokens": 116,
+      "cu": 0.6948275862068964,
+      "latencyMs": 13886,
+      "at": "2026-11-05T17:34:40.372Z"
+    },
+    {
+      "purpose": "提炼论文证据 1/4",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 2210,
+      "outputTokens": 720,
+      "cu": 0.44051724137931025,
+      "latencyMs": 21681,
+      "at": "2026-11-05T17:35:02.068Z"
+    },
+    {
+      "purpose": "提炼论文证据 2/4",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 1993,
+      "outputTokens": 587,
+      "cu": 0.3818965517241379,
+      "latencyMs": 18997,
+      "at": "2026-11-05T17:35:21.071Z"
+    },
+    {
+      "purpose": "提炼论文证据 3/4",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 3295,
+      "outputTokens": 746,
+      "cu": 0.5775862068965517,
+      "latencyMs": 19249,
+      "at": "2026-11-05T17:35:40.324Z"
+    },
+    {
+      "purpose": "提炼论文证据 4/4",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 1166,
+      "outputTokens": 510,
+      "cu": 0.26379310344827583,
+      "latencyMs": 21476,
+      "at": "2026-11-05T17:36:01.808Z"
+    },
+    {
+      "purpose": "生成汇报大纲与关键图表推荐",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 5194,
+      "outputTokens": 1515,
+      "cu": 0.9922413793103446,
+      "latencyMs": 28770,
+      "at": "2026-11-05T17:36:30.583Z"
+    },
+    {
+      "purpose": "定位关键图表 3、4、8 页",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 8040,
+      "outputTokens": 195,
+      "cu": 1.0172413793103448,
+      "latencyMs": 14082,
+      "at": "2026-11-05T17:37:12.918Z"
+    },
+    {
+      "purpose": "定位关键图表 9 页",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 2804,
+      "outputTokens": 67,
+      "cu": 0.35431034482758617,
+      "latencyMs": 7518,
+      "at": "2026-11-05T17:37:20.553Z"
+    },
+    {
+      "purpose": "生成幻灯片 1–3",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 4895,
+      "outputTokens": 1209,
+      "cu": 0.882758620689655,
+      "latencyMs": 26103,
+      "at": "2026-11-05T17:39:40.283Z"
+    },
+    {
+      "purpose": "生成幻灯片 4–6",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 5147,
+      "outputTokens": 969,
+      "cu": 0.8551724137931034,
+      "latencyMs": 18393,
+      "at": "2026-11-05T17:39:58.688Z"
+    },
+    {
+      "purpose": "生成幻灯片 4–6",
+      "model": "xiaomi/mimo-v2.5",
+      "inputTokens": 5147,
+      "outputTokens": 1769,
+      "cu": 1.0482758620689654,
+      "latencyMs": 26180,
+      "at": "2026-11-05T18:23:59.546Z"
+    }
+  ],
+  "earlierFormatTests": [
+    {
+      "purpose": "识别正文范围（早期格式测试）",
+      "cu": 0.9612068965517241
+    },
+    {
+      "purpose": "复核边界（早期格式测试）",
+      "cu": 0.6922413793103448
+    },
+    {
+      "purpose": "证据数量格式不符，被拦截",
+      "cu": 0.514655172413793
+    },
+    {
+      "purpose": "识别正文范围（早期重试）",
+      "cu": 0.964655172413793
+    },
+    {
+      "purpose": "复核边界（早期重试）",
+      "cu": 0.6982758620689654
+    },
+    {
+      "purpose": "证据分类格式不符，被拦截",
+      "cu": 0.44741379310344825
+    }
+  ]
+}

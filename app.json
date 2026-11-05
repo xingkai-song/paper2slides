@@ -1,0 +1,7 @@
+{
+  "name": "Paper2Slides",
+  "slug": "paper2slides-ai",
+  "tagline": "从论文到讲台，让研究被看见。",
+  "description": "上传文字型 AI／计算机论文 PDF，由 Anna AI 识别正文、提炼大纲、推荐关键图表。核验正文与图表后生成可自由编辑的演示文稿，完整保存项目并导出可编辑 PPTX。正文最多50页，文件最多20MB。",
+  "category": "education"
+}
