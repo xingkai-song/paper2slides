@@ -1,3 +1,4 @@
+import { mergeFigureCandidates } from "./lib/pdfText";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
@@ -108,12 +109,45 @@ export default function App() {
     [downloadReady, setDownloadReady] = useState<{
       blob: Blob;
       filename: string;
+      cloudSaved?: boolean;
     } | null>(null),
     [recovery, setRecovery] = useState<Project | null>(null),
     [deleteId, setDeleteId] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null),
     gen = useRef<Generator | null>(null);
+  const exportCache = useRef<{ key: string; blob: Blob } | null>(null);
+  const pendingFigures =
+    p?.figures.filter((f) => f.selected && (!f.confirmed || !f.assetPath)) ||
+    [];
+  const assignedFigures = p?.figures.filter((f) => f.selected) || [];
+  const figureAssignmentProblem = p?.outline.length
+    ? assignedFigures.find(
+        (f) =>
+          !p.outline.some((o) => o.id === f.slideId) ||
+          assignedFigures.filter((other) => other.slideId === f.slideId)
+            .length > 1,
+      )
+    : undefined;
+  function goToFigure(id: string) {
+    document
+      .getElementById("figure-" + id)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document.getElementById("figure-" + id)?.focus({ preventScroll: true });
+  }
   const didConnect = useRef(false);
+  useEffect(() => {
+    if (!usageOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        setUsageOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [usageOpen]);
+
   useEffect(() => {
     if (didConnect.current) return;
     didConnect.current = true;
@@ -653,10 +687,27 @@ export default function App() {
         p.exported?.revision === p.revision ? p.exported.path : undefined;
       let outputBlob: Blob | undefined;
       if (!path) {
-        const blob = await buildPPTX(p, platform);
+        const key = p.id + ":" + p.revision;
+        setBusy(
+          exportCache.current?.key === key
+            ? "复用已生成 PPTX"
+            : "生成可编辑 PPTX",
+        );
+        const blob =
+          exportCache.current?.key === key
+            ? exportCache.current.blob
+            : await buildPPTX(p, platform);
+        exportCache.current = { key, blob };
         outputBlob = blob;
+        if (platform.kind === "anna")
+          setDownloadReady({
+            blob,
+            filename: p.name.replace(/[\\/:*?"<>|]/g, "-") + ".pptx",
+          });
         path = `projects/${p.id}/exports/${p.revision}.pptx`;
-        await platform.upload(path, blob);
+        await platform.upload(path, blob, (text) =>
+          setBusy("上传 PPTX · " + text),
+        );
         patch({ exported: { revision: p.revision + 1, path } });
       }
       const filename = p.name.replace(/[\\/:*?"<>|]/g, "-") + ".pptx";
@@ -664,7 +715,9 @@ export default function App() {
         setDownloadReady({
           blob: outputBlob || (await platform.blob(path)),
           filename,
+          cloudSaved: true,
         });
+      setBusy("准备下载 PPTX");
       await platform.download(path, filename);
     } catch (e) {
       setError(message(e));
@@ -1468,12 +1521,37 @@ export default function App() {
                         !!busy ||
                         p.outline.length < 5 ||
                         p.outline.length > 20 ||
-                        p.figures.some((f) => f.selected && !f.confirmed)
+                        pendingFigures.length > 0 ||
+                        !!figureAssignmentProblem
                       }
                       onClick={() => void run((g) => g.generate())}
                     >
                       生成 {p.outline.length} 页 PPT <ArrowRight size={16} />
                     </button>
+                    {pendingFigures.length > 0 && (
+                      <div className="notice" role="status">
+                        还有 {pendingFigures.length} 张图表待核验。
+                        <button
+                          className="text-button"
+                          disabled={!!busy}
+                          onClick={() => goToFigure(pendingFigures[0].id)}
+                        >
+                          去核验第一张
+                        </button>
+                      </div>
+                    )}
+                    {figureAssignmentProblem && (
+                      <div className="notice" role="status">
+                        请为每张图表分配不同的幻灯片，避免图表过小。
+                        <button
+                          className="text-button"
+                          disabled={!!busy}
+                          onClick={() => goToFigure(figureAssignmentProblem.id)}
+                        >
+                          调整图表对应页
+                        </button>
+                      </div>
+                    )}
                     <button
                       className="text-button"
                       disabled={!!busy}
@@ -1648,7 +1726,9 @@ export default function App() {
                       <button
                         className="secondary"
                         disabled={!!busy || !pdf}
-                        onClick={() => pdf && void run((g) => g.locate(pdf))}
+                        onClick={() =>
+                          pdf && void run((g) => g.locate(pdf, true))
+                        }
                       >
                         <Sparkles size={15} />
                         AI 定位选中图表
@@ -1662,6 +1742,21 @@ export default function App() {
                         手动补充
                       </button>
                     </div>
+                    <button
+                      className="text-button"
+                      disabled={!!busy}
+                      onClick={() =>
+                        patch({
+                          figures: mergeFigureCandidates(
+                            findFigures(p.pages, p.range!.start, p.range!.end),
+                            p.figures,
+                          ),
+                          generated: {},
+                        })
+                      }
+                    >
+                      重新扫描图注（保留已确认图表）
+                    </button>
                     <p className="muted small">
                       勾选后请检查裁剪区域并确认。已确认的图表将保留原图，插入指定页面。
                     </p>
@@ -1670,6 +1765,8 @@ export default function App() {
                         {p.figures.map((f) => (
                           <article
                             key={f.id}
+                            id={"figure-" + f.id}
+                            tabIndex={-1}
                             className={
                               "figure-card " + (f.selected ? "selected" : "")
                             }
@@ -1701,6 +1798,24 @@ export default function App() {
                             />
                             <p className="figure-caption">{f.caption}</p>
                             <p className="figure-reason">{f.reason}</p>
+                            {/^(table|表)/i.test(f.label) &&
+                              (f.aspect || 2) < 1.6 && (
+                                <p className="figure-location">
+                                  完整大表在横屏中可能字小。可手动框选关键区域并分配到不同页面，逐页检查表头与数据是否完整。
+                                </p>
+                              )}
+                            {!f.confirmed && (
+                              <p className="figure-location" role="status">
+                                {f.locationStatus === "manual"
+                                  ? "未能可靠定位，请手动框选。"
+                                  : f.located
+                                    ? "AI 已复核边界，仍需你核验完整性。"
+                                    : "尚未定位；预览为整页，不代表已识别图表。"}
+                                {f.locationNote && (
+                                  <span> {f.locationNote}</span>
+                                )}
+                              </p>
+                            )}
                             {f.selected && (
                               <>
                                 <select
@@ -1712,6 +1827,7 @@ export default function App() {
                                     })
                                   }
                                 >
+                                  <option value="">请选择对应页面</option>
                                   {p.outline.map((o, i) => (
                                     <option key={o.id} value={o.id}>
                                       第{i + 1}页 · {o.title}
@@ -2215,11 +2331,18 @@ export default function App() {
               pdf={pdf}
               page={cropping.page}
               onPage={(n) =>
-                setCropping({ ...cropping, page: n, confirmed: false })
+                setCropping({
+                  ...cropping,
+                  page: n,
+                  confirmed: false,
+                  located: false,
+                  locationStatus: "manual",
+                })
               }
               box={cropping.bbox}
               onBox={(bbox) => setCropping({ ...cropping, bbox })}
               cropping
+              requireSelection={!cropping.located}
               onConfirm={() => !cropBusy && void confirmCrop()}
             />
             {cropBusy && (
@@ -2232,12 +2355,28 @@ export default function App() {
         </div>
       )}
       {usageOpen && (
-        <div className="modal-backdrop">
-          <div className="usage-modal">
+        <div
+          className="modal-backdrop"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setUsageOpen(false);
+          }}
+        >
+          <div
+            className="usage-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="usage-title"
+          >
             <div className="modal-heading">
-              <h2>用量与工作空间</h2>
-              <button onClick={() => setUsageOpen(false)}>
+              <h2 id="usage-title">用量与工作空间</h2>
+              <button
+                className="secondary"
+                aria-label="关闭用量窗口"
+                autoFocus
+                onClick={() => setUsageOpen(false)}
+              >
                 <X size={20} />
+                关闭
               </button>
             </div>
             <p className="muted">
@@ -2348,10 +2487,19 @@ export default function App() {
       {downloadReady && (
         <div className="modal-backdrop">
           <div className="dialog">
-            <h2>准备好了，带去分享吧。</h2>
+            <h2>
+              {downloadReady.cloudSaved
+                ? "准备好了，带去分享吧。"
+                : "PPTX 已生成"}
+            </h2>
             <p>
-              演示文稿已生成并保存在项目中。如果浏览器没有自动开始下载，点击下方按钮保存文件。
+              {downloadReady.cloudSaved
+                ? "演示文稿已保存在项目中。如果浏览器没有自动下载，点击下方保存文件。"
+                : "文件已在本机生成，云端保存尚未完成。你可以先下载；若上传失败，再次点击导出将复用已生成文件。"}
             </p>
+            {!downloadReady.cloudSaved && (
+              <p role="status">{error || busy || "云端保存未完成"}</p>
+            )}
             <div className="dialog-actions">
               <button
                 className="secondary"

@@ -17,6 +17,7 @@ export function PdfPanel({
   onBox,
   onConfirm,
   cropping = false,
+  requireSelection = false,
 }: {
   pdf: PDF;
   page: number;
@@ -25,16 +26,19 @@ export function PdfPanel({
   onBox?: (b: Box) => void;
   onConfirm?: () => void;
   cropping?: boolean;
+  requireSelection?: boolean;
 }) {
   const [image, setImage] = useState(""),
     [error, setError] = useState(""),
-    [zoom, setZoom] = useState(1);
+    [zoom, setZoom] = useState(1),
+    [selectionMade, setSelectionMade] = useState(false);
   const drag = useRef<{ x: number; y: number } | null>(null);
   const area = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let active = true;
     setError("");
     setImage("");
+    setSelectionMade(false);
     renderPage(pdf, page, 1400)
       .then((c) => {
         if (active) setImage(c.toDataURL("image/png"));
@@ -120,6 +124,7 @@ export function PdfPanel({
           }}
           onPointerMove={(e) => {
             if (!drag.current || !onBox) return;
+            setSelectionMade(true);
             const p = point(e),
               a = drag.current;
             onBox({
@@ -155,10 +160,20 @@ export function PdfPanel({
       </div>
       {cropping && (
         <div className="crop-actions">
-          <span>请保留坐标轴、图例与子图标签</span>
+          <span>
+            {requireSelection && !selectionMade
+              ? "未自动定位，请先拖动框选完整图表"
+              : "请保留坐标轴、图例与子图标签"}
+          </span>
           <button
             className="primary"
-            disabled={!box || !validBox(box)}
+            disabled={
+              !image ||
+              !!error ||
+              !box ||
+              !validBox(box) ||
+              (requireSelection && !selectionMade)
+            }
             onClick={onConfirm}
           >
             <Check size={16} />

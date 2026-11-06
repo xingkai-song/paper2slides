@@ -1,5 +1,9 @@
+import { uploadWithRetry } from "./upload";
 import { openDB } from "idb";
 import type { Platform, CompletionRequest, Usage } from "../types";
+// Use the economical vision-capable model for both text and image requests.
+// Use the exact Anna catalogue name rather than inheriting the chat default.
+export const APP_MODEL = "xiaomi/mimo-v2.5";
 const db = () =>
   openDB("paper2slides-v1", 1, {
     upgrade(d) {
@@ -92,6 +96,7 @@ export async function connectPlatform(): Promise<Platform> {
     kind: "anna",
     async complete(req: CompletionRequest) {
       const start = Date.now();
+      const model = APP_MODEL;
       const content: any[] = [{ type: "text", text: req.prompt }];
       for (const data of req.images || [])
         content.push({
@@ -109,6 +114,12 @@ export async function connectPlatform(): Promise<Platform> {
             },
           ],
           maxTokens: req.maxTokens,
+          modelPreferences: {
+            hints: [{ name: model }],
+            intelligencePriority: 0,
+            costPriority: 1,
+            speedPriority: 0,
+          },
           thinking: false,
           temperature: 0.25,
           metadata: { purpose: req.purpose },
@@ -123,6 +134,13 @@ export async function connectPlatform(): Promise<Platform> {
         latencyMs: r._meta?.latencyMs || Date.now() - start,
         at: new Date().toISOString(),
       };
+      if (r.model !== model) {
+        const e = new Error(
+          `Anna 未使用指定模型 ${model}，实际返回 ${r.model || "未知模型"}。本次调用已记录用量，请稍后重试。`,
+        ) as Error & { usage: Usage };
+        e.usage = usage;
+        throw e;
+      }
       if (r.stopReason === "maxTokens") {
         const e = new Error(
           "输出被截断，请缩短要求或重试当前阶段。",
@@ -171,29 +189,29 @@ export async function connectPlatform(): Promise<Platform> {
         await anna.storage.delete({ key, ...(etag ? { if_match: etag } : {}) }),
       );
     },
-    async upload(path, blob) {
-      const init = unwrap(
-        await anna.files.upload_init({
-          path,
-          size: blob.size,
-          content_type: blob.type || "application/octet-stream",
-        }),
-      );
-      const r = await fetch(init.put_url, {
-        method: "PUT",
-        headers: {
-          ...init.headers,
-          "Content-Type": blob.type || "application/octet-stream",
+    async upload(path, blob, onProgress) {
+      await uploadWithRetry(
+        {
+          init: async (path, blob) =>
+            unwrap(
+              await anna.files.upload_init({
+                path,
+                size: blob.size,
+                content_type: blob.type || "application/octet-stream",
+              }),
+            ),
+          finalize: async (path, blob, etag) =>
+            unwrap(
+              await anna.files.upload_finalize({
+                path,
+                size: blob.size,
+                ...(etag ? { etag } : {}),
+              }),
+            ),
         },
-        body: blob,
-      });
-      if (!r.ok) throw new Error("文件上传失败 HTTP " + r.status);
-      unwrap(
-        await anna.files.upload_finalize({
-          path,
-          size: blob.size,
-          ...(r.headers.get("etag") ? { etag: r.headers.get("etag") } : {}),
-        }),
+        path,
+        blob,
+        onProgress,
       );
     },
     async blob(path) {

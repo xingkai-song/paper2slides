@@ -1,3 +1,4 @@
+import { SLIDE_FONT, LINE_HEIGHT, elementText } from "../lib/typography";
 import { useEffect, useRef, useState } from "react";
 import {
   Stage,
@@ -142,14 +143,14 @@ export function SlideCanvas({ platform }: { platform: Platform }) {
                   <Text
                     key={e.id}
                     {...common(e)}
-                    text={e.text}
+                    text={elementText(e)}
                     fill={e.color}
-                    fontFamily="Arial, Microsoft YaHei, sans-serif"
+                    fontFamily={SLIDE_FONT}
                     fontSize={e.fontSize || 28}
                     fontStyle={e.bold ? "bold" : "normal"}
                     align={e.align}
-                    lineHeight={1.25}
-                    wrap="word"
+                    lineHeight={LINE_HEIGHT}
+                    wrap="none"
                   />
                 ) : e.type === "image" ? (
                   <KImage

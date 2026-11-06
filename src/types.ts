@@ -41,6 +41,10 @@ export interface FigureCandidate {
   page: number;
   reason: string;
   bbox: { x: number; y: number; w: number; h: number };
+  captionBox?: { x: number; y: number; w: number; h: number };
+  locationVersion?: number;
+  locationStatus?: "pending" | "reviewed" | "manual";
+  locationNote?: string;
   located: boolean;
   confirmed: boolean;
   selected: boolean;
@@ -149,7 +153,11 @@ export interface Platform {
   set(key: string, value: unknown, etag?: string): Promise<{ etag?: string }>;
   list(prefix: string): Promise<{ key: string }[]>;
   remove(key: string, etag?: string): Promise<void>;
-  upload(path: string, blob: Blob): Promise<void>;
+  upload(
+    path: string,
+    blob: Blob,
+    onProgress?: (text: string) => void,
+  ): Promise<void>;
   blob(path: string): Promise<Blob>;
   download(path: string, filename: string): Promise<void>;
   listFiles(prefix: string): Promise<string[]>;

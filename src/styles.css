@@ -2069,3 +2069,5 @@ h3 {
     display: none;
   }
 }
+.figure-card:focus { outline: 3px solid #7b9a62; outline-offset: 4px; }
+.figure-location { font-size: 12px; line-height: 1.6; padding: 10px; background: #f5efe3; border-radius: 6px; }

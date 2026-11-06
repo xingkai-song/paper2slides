@@ -233,3 +233,119 @@ describe("generation checkpoint and accounting", () => {
     expect(calls).toBe(0);
   });
 });
+
+describe("outline reference repair", () => {
+  function fixture(responses: (object | Error)[], stopAfterFirst = false) {
+    let p = project(1);
+    const evidence = {
+      id: "internal-evidence",
+      page: 1,
+      quote: "A verified source sentence",
+      claim: "Verified claim",
+      kind: "paper" as const,
+    };
+    p.evidence = [evidence];
+    p.chunks = { "1-1-0": [evidence], "1-1-1": [evidence] };
+    p.figures = [
+      {
+        id: "internal-figure",
+        page: 1,
+        label: "Figure 1",
+        caption: "Original method",
+        reason: "",
+        bbox: { x: 0, y: 0, w: 1, h: 1 },
+        selected: false,
+        confirmed: false,
+        located: false,
+      },
+    ];
+    const prompts: any[] = [];
+    let g: Generator;
+    const fake = {
+      kind: "anna",
+      complete: async (req: any) => {
+        prompts.push(JSON.parse(req.prompt));
+        const response = responses[prompts.length - 1];
+        if (response instanceof Error) throw response;
+        if (stopAfterFirst) g.stop();
+        return {
+          text: JSON.stringify(response),
+          usage: {
+            purpose: req.purpose,
+            model: "test",
+            inputTokens: 1,
+            outputTokens: 1,
+            cu: 0.25,
+            latencyMs: 1,
+            at: "",
+          },
+        };
+      },
+    } as unknown as Platform;
+    g = new Generator(
+      fake,
+      () => p,
+      (patch) => {
+        p = { ...p, ...patch };
+      },
+      () => {},
+    );
+    return { g, prompts, get: () => p };
+  }
+  function outline(evidenceId = "E1", figureId = "F1") {
+    return {
+      slides: Array.from({ length: 6 }, (_, i) => ({
+        title: `Slide ${i + 1}`,
+        goal: "goal",
+        evidenceIds: [evidenceId],
+        figureIds: [figureId],
+        layout: "figure",
+      })),
+      recommendations: [{ figureId, reason: "method" }],
+    };
+  }
+  it("repairs once with original output and explicit errors, maps references and reuses evidence", async () => {
+    const f = fixture([outline("E99", "F99"), outline()]);
+    await f.g.outline();
+    expect(f.prompts).toHaveLength(2);
+    expect(f.prompts[1].repair.errors[0]).toContain("第1页");
+    expect(f.prompts[1].repair.originalOutline.slides[0].evidenceIds).toEqual([
+      "E99",
+    ]);
+    expect(f.prompts[1].repair.allowedEvidenceIds).toEqual(["E1"]);
+    expect(f.get().outline[0].evidenceIds).toEqual(["internal-evidence"]);
+    expect(f.get().outline[0].figureIds).toEqual(["internal-figure"]);
+    expect(f.get().usage.reduce((n, u) => n + u.cu, 0)).toBe(0.5);
+    expect(f.get().evidence).toHaveLength(1);
+  });
+  it("does not retry a valid outline", async () => {
+    const f = fixture([outline()]);
+    await f.g.outline();
+    expect(f.prompts).toHaveLength(1);
+  });
+  it("stops after one failed repair without committing invalid output", async () => {
+    const f = fixture([outline("E99"), outline("E98")]);
+    await expect(f.g.outline()).rejects.toThrow("自动修复后仍有无效引用");
+    expect(f.prompts).toHaveLength(2);
+    expect(f.get().outline).toEqual([]);
+    expect(f.get().evidence).toHaveLength(1);
+    expect(f.get().usage).toHaveLength(2);
+  });
+  it("does not retry transport, permission or quota failures", async () => {
+    for (const message of [
+      "network failed",
+      "permission denied",
+      "quota exhausted",
+    ]) {
+      const f = fixture([new Error(message)]);
+      await expect(f.g.outline()).rejects.toThrow(message);
+      expect(f.prompts).toHaveLength(1);
+    }
+  });
+  it("does not issue a repair after user cancellation", async () => {
+    const f = fixture([outline("E99")], true);
+    await expect(f.g.outline()).rejects.toThrow("停止");
+    expect(f.prompts).toHaveLength(1);
+    expect(f.get().usage).toHaveLength(1);
+  });
+});

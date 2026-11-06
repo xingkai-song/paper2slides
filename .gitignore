@@ -7,3 +7,6 @@ test-results/
 .local/
 *.tsbuildinfo
 .DS_Store
+
+# Account-bearing browser screenshots stay local.
+docs/qa/2026-11-06/images/staging-*.png

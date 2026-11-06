@@ -1,3 +1,4 @@
+import { SLIDE_FONT, LINE_HEIGHT, elementText } from "./typography";
 import pptxgen from "pptxgenjs";
 import type { Project, Platform } from "../types";
 import { themes } from "../types";
@@ -16,7 +17,7 @@ export async function buildPPTX(p: Project, platform: Platform) {
   pptx.subject = p.pdfName;
   pptx.title = p.name;
   pptx.company = "Anna App";
-  pptx.theme = { headFontFace: "Arial", bodyFontFace: "Arial" };
+  pptx.theme = { headFontFace: SLIDE_FONT, bodyFontFace: SLIDE_FONT };
   const t = themes[p.theme],
     scale = 1 / 96;
   const images = new Map<string, string>();
@@ -32,10 +33,9 @@ export async function buildPPTX(p: Project, platform: Platform) {
         rotate: e.rotation,
       };
       if (e.type === "text")
-        slide.addText(e.text || "", {
+        slide.addText(elementText(e), {
           ...box,
-          fontFace:
-            p.settings.language === "中文" ? "Arial Unicode MS" : "Arial",
+          fontFace: SLIDE_FONT,
           fontSize: (e.fontSize || 28) * 0.75,
           lang: p.settings.language === "中文" ? "zh-CN" : "en-US",
           bold: e.bold,
@@ -44,7 +44,9 @@ export async function buildPPTX(p: Project, platform: Platform) {
           margin: 0,
           breakLine: false,
           paraSpaceAfter: 0,
-          lineSpacingMultiple: 1.15,
+          lineSpacingMultiple: LINE_HEIGHT,
+          wrap: false,
+          fit: "none",
           valign: "top",
         });
       else if (e.type === "image") {

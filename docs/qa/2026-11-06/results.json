@@ -1,0 +1,388 @@
+{
+  "date": "2026-11-06",
+  "timezone": "Asia/Shanghai",
+  "totalCU": 40.738793103448266,
+  "totalModelCalls": 49,
+  "totalSlides": 31,
+  "samples": [
+    {
+      "sample": "roformer",
+      "file": "RoFormer.pdf",
+      "pdfPages": 12,
+      "bodyStart": 1,
+      "bodyEnd": 9,
+      "pptSlides": 6,
+      "timingsSeconds": {
+        "parse": 0.343,
+        "upload": 5.091,
+        "identify": 13.827,
+        "outline": 95.919,
+        "locate": 19.484,
+        "figureUpload": 8.668,
+        "generate": 61.05,
+        "export": 5.067,
+        "exportUpload": 2.673,
+        "save": 2.678,
+        "restore": 1.797
+      },
+      "evidenceCalls": 7,
+      "outlineCompositionSeconds": 10.098,
+      "modelCalls": 13,
+      "cu": 8.187931034482759,
+      "model": [
+        "xiaomi/mimo-v2.5"
+      ],
+      "selectedFigures": 3,
+      "targetCorrect": 1,
+      "basicUsable": 1,
+      "strictPass": 0,
+      "figureReviews": [
+        {
+          "id": "5e664639-3cf2-4610-a6b5-8db66b12ffd0",
+          "reviewed": true,
+          "label": "Fig. 1",
+          "page": 3,
+          "grade": "pass_with_margin_issue",
+          "targetCorrect": true,
+          "complete": true,
+          "notes": "目标结构图完整；底部带入半行图注，建议收紧边界。"
+        },
+        {
+          "id": "69164953-6d49-4be8-80ab-c5a0956b1cad",
+          "reviewed": true,
+          "label": "Fig. 3",
+          "page": 5,
+          "grade": "wrong_target",
+          "targetCorrect": false,
+          "complete": true,
+          "notes": "标记Fig.3但实际裁到第5页Fig.2；Fig.3只是本页正文引用，真正图在后页。"
+        },
+        {
+          "id": "f42b2c13-42e4-44ab-ba06-523e09f2905f",
+          "reviewed": true,
+          "label": "Fig. 5",
+          "page": 7,
+          "grade": "wrong_target",
+          "targetCorrect": false,
+          "complete": true,
+          "notes": "标记Fig.5但实际裁到第7页Fig.4；本页正文提及Fig.5，真正图不在本页。"
+        }
+      ],
+      "layoutWarnings": [
+        {
+          "slide": 4,
+          "title": "关键实验结果",
+          "issues": [
+            "文字可能溢出，请减少内容或扩大文本框"
+          ]
+        }
+      ],
+      "failedAttempts": [],
+      "restoredSlides": 6,
+      "structuralAudit": {
+        "pptxSlides": [
+          {
+            "slide": "ppt/slides/slide1.xml",
+            "textRuns": 4,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide2.xml",
+            "textRuns": 5,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide3.xml",
+            "textRuns": 4,
+            "pictures": 2
+          },
+          {
+            "slide": "ppt/slides/slide4.xml",
+            "textRuns": 6,
+            "pictures": 1
+          },
+          {
+            "slide": "ppt/slides/slide5.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide6.xml",
+            "textRuns": 6,
+            "pictures": 0
+          }
+        ],
+        "confirmedImagesAllPresent": true,
+        "selectedFigures": 3,
+        "exportedImageObjects": 3,
+        "geometricWarnings": [],
+        "notes": "Box intersection does not detect rendered text overflow; visual review separately required."
+      }
+    },
+    {
+      "sample": "r1",
+      "file": "DeepSeek-R1.pdf",
+      "pdfPages": 22,
+      "bodyStart": 3,
+      "bodyEnd": 16,
+      "pptSlides": 10,
+      "timingsSeconds": {
+        "parse": 0.337,
+        "upload": 4.601,
+        "identify": 12.451,
+        "outline": 126.828,
+        "locate": 10.771,
+        "figureUpload": 6.449,
+        "generate": 80.142,
+        "export": 3.574,
+        "exportUpload": 2.713,
+        "save": 3.774,
+        "restore": 2.1
+      },
+      "evidenceCalls": 5,
+      "outlineCompositionSeconds": 21.533,
+      "modelCalls": 13,
+      "cu": 10.07758620689655,
+      "model": [
+        "xiaomi/mimo-v2.5"
+      ],
+      "selectedFigures": 2,
+      "targetCorrect": 0,
+      "basicUsable": 0,
+      "strictPass": 0,
+      "figureReviews": [
+        {
+          "id": "6c08a66d-944d-46bf-b1a1-0c12be03076c",
+          "label": "Figure 2",
+          "page": 6,
+          "reviewed": true,
+          "grade": "wrong_target",
+          "targetCorrect": false,
+          "complete": false,
+          "notes": "候选页为正文引用页6，真正Figure 2／Table 2不在此页。两者被模型返回完全相同框，均裁到页顶Table 1训练模板，且底部内容被截断。"
+        },
+        {
+          "id": "c55d335d-cfb1-44a6-b1f2-dce5069e0d9a",
+          "label": "Table 2",
+          "page": 6,
+          "reviewed": true,
+          "grade": "wrong_target",
+          "targetCorrect": false,
+          "complete": false,
+          "notes": "候选页为正文引用页6，真正Figure 2／Table 2不在此页。两者被模型返回完全相同框，均裁到页顶Table 1训练模板，且底部内容被截断。"
+        }
+      ],
+      "layoutWarnings": [],
+      "failedAttempts": [],
+      "restoredSlides": 10,
+      "structuralAudit": {
+        "pptxSlides": [
+          {
+            "slide": "ppt/slides/slide1.xml",
+            "textRuns": 4,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide2.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide3.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide4.xml",
+            "textRuns": 4,
+            "pictures": 1
+          },
+          {
+            "slide": "ppt/slides/slide5.xml",
+            "textRuns": 4,
+            "pictures": 1
+          },
+          {
+            "slide": "ppt/slides/slide6.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide7.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide8.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide9.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide10.xml",
+            "textRuns": 5,
+            "pictures": 0
+          }
+        ],
+        "confirmedImagesAllPresent": true,
+        "selectedFigures": 2,
+        "exportedImageObjects": 2,
+        "geometricWarnings": [],
+        "notes": "Box intersection does not detect rendered text overflow; visual review separately required."
+      }
+    },
+    {
+      "sample": "v3",
+      "file": "DeepSeek_V3.pdf",
+      "pdfPages": 53,
+      "bodyStart": 4,
+      "bodyEnd": 36,
+      "pptSlides": 15,
+      "timingsSeconds": {
+        "parse": 0.511,
+        "upload": 5.544,
+        "identify": 18.578,
+        "outline": 214.779,
+        "locate": 19.225,
+        "figureUpload": 6.428,
+        "generate": 95.073,
+        "export": 3.304,
+        "exportUpload": 180.789,
+        "save": 5.524,
+        "restore": 2.614
+      },
+      "evidenceCalls": 13,
+      "outlineCompositionSeconds": 13.838,
+      "modelCalls": 23,
+      "cu": 22.47327586206896,
+      "model": [
+        "xiaomi/mimo-v2.5"
+      ],
+      "selectedFigures": 2,
+      "targetCorrect": 1,
+      "basicUsable": 0,
+      "strictPass": 0,
+      "figureReviews": [
+        {
+          "id": "0e2373d3-4ed8-48a6-a154-349df33bba50",
+          "label": "Table 6",
+          "page": 32,
+          "reviewed": true,
+          "grade": "not_located",
+          "targetCorrect": false,
+          "complete": false,
+          "notes": "Table6候选来自第32页正文引用，本页没有目标表。视觉模型未返回有效定位，仍使用默认框，裁到整段正文。"
+        },
+        {
+          "id": "28cb498b-9541-4754-9ed4-0ba3fbd0df24",
+          "label": "Table 9",
+          "page": 34,
+          "reviewed": true,
+          "grade": "clipped",
+          "targetCorrect": true,
+          "complete": false,
+          "notes": "目标为Table9，但左右截掉模型名及Length列，底部数据行被裁；不能直接使用。"
+        }
+      ],
+      "layoutWarnings": [],
+      "failedAttempts": [
+        {
+          "stage": "exportUpload",
+          "ms": 175447.885,
+          "ok": false,
+          "error": "TypeError: fetch failed",
+          "at": "2026-11-06T06:51:30.193Z"
+        }
+      ],
+      "restoredSlides": 15,
+      "structuralAudit": {
+        "pptxSlides": [
+          {
+            "slide": "ppt/slides/slide1.xml",
+            "textRuns": 4,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide2.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide3.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide4.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide5.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide6.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide7.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide8.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide9.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide10.xml",
+            "textRuns": 4,
+            "pictures": 1
+          },
+          {
+            "slide": "ppt/slides/slide11.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide12.xml",
+            "textRuns": 4,
+            "pictures": 1
+          },
+          {
+            "slide": "ppt/slides/slide13.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide14.xml",
+            "textRuns": 6,
+            "pictures": 0
+          },
+          {
+            "slide": "ppt/slides/slide15.xml",
+            "textRuns": 6,
+            "pictures": 0
+          }
+        ],
+        "confirmedImagesAllPresent": true,
+        "selectedFigures": 2,
+        "exportedImageObjects": 2,
+        "geometricWarnings": [],
+        "notes": "Box intersection does not detect rendered text overflow; visual review separately required."
+      }
+    }
+  ]
+}

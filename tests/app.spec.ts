@@ -65,3 +65,56 @@ test("upload parses a PDF but local mode never pretends to run real AI", async (
     page.getByRole("heading", { name: /我们读的是正文/ }),
   ).toBeVisible();
 });
+
+test("pending figures explain disabled generation and require an actual crop", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "打开示例", exact: false }).click();
+  await expect(page.getByRole("button", { name: "导出 PPTX" })).toBeVisible();
+  await page.evaluate(async () => {
+    // Seed a real UI state through the same store, without invoking paid models.
+    // @ts-expect-error Vite serves this module in the local test app.
+    const { useApp } = await import("/src/store.ts");
+    const p = useApp.getState().project;
+    useApp.getState().patch({
+      stage: "outline",
+      figures: [
+        {
+          ...p.figures[0],
+          id: "pending-qa",
+          selected: true,
+          confirmed: false,
+          located: false,
+          assetPath: undefined,
+          locationStatus: "manual",
+          slideId: p.outline[0].id,
+        },
+      ],
+    });
+  });
+  await expect(page.getByText("还有 1 张图表待核验。")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /生成 \d+ 页 PPT/ }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "去核验第一张" }).click();
+  await expect(page.locator("#figure-pending-qa")).toBeFocused();
+  await page
+    .getByRole("button", { name: "框选图表并确认", exact: true })
+    .click();
+  await expect(page.locator(".pdf-page img")).toBeVisible();
+  const confirm = page.getByRole("button", {
+    name: "确认裁剪并插入",
+    exact: true,
+  });
+  await expect(confirm).toBeDisabled();
+  const box = await page.locator(".pdf-page").boundingBox();
+  expect(box).toBeTruthy();
+  await page.mouse.move(box!.x + box!.width * 0.1, box!.y + box!.height * 0.1);
+  await page.mouse.down();
+  await page.mouse.move(box!.x + box!.width * 0.8, box!.y + box!.height * 0.4, {
+    steps: 8,
+  });
+  await page.mouse.up();
+  await expect(confirm).toBeEnabled();
+});

@@ -1,3 +1,4 @@
+import { fitsText, textHeight } from "./typography";
 import type {
   Slide,
   SlideElement,
@@ -45,7 +46,8 @@ export function layoutSlide(
 ): Slide {
   const t = themes[theme];
   const els: SlideElement[] = [];
-  const title = textElement(s.title, 72, 55, 1136, 105, 42);
+  const title = textElement(s.title, 72, 48, 1136, 112, 42);
+  if (!fitsText(s.title, 1136, 112, 42)) title.fontSize = 36;
   title.bold = true;
   els.push(title);
   const selected = figures.filter(
@@ -53,19 +55,30 @@ export function layoutSlide(
   );
   if (outline.layout === "title" && !selected.length) {
     title.y = 200;
-    title.h = 160;
-    title.fontSize = 56;
+    title.h = 175;
+    title.fontSize = fitsText(s.title, 1136, 175, 56) ? 56 : 46;
     els.push(
       textElement(s.bullets.slice(0, 2).join("\n"), 76, 390, 1090, 160, 28),
     );
   } else if (selected.length) {
     const portrait = selected.length === 1 && (selected[0].aspect || 1) < 0.9;
-    const full = outline.layout === "figure" || selected.length > 1 || portrait;
+    const denseTable =
+      selected.length === 1 &&
+      /^(table|表)/i.test(selected[0].label) &&
+      (selected[0].aspect || 1) < 1.6;
+    const bodyText = s.bullets.map((x) => "• " + x).join("\n\n");
+    const splitFits = fitsText(bodyText, 465, 400, 28);
+    const full =
+      outline.layout === "figure" ||
+      selected.length > 1 ||
+      portrait ||
+      denseTable ||
+      !splitFits;
     const area = {
       x: full ? 72 : 590,
-      y: portrait ? 160 : 180,
+      y: denseTable ? 145 : portrait ? 160 : 180,
       w: full ? 1136 : 618,
-      h: portrait ? 435 : full ? 360 : 400,
+      h: denseTable ? 480 : portrait ? 435 : full ? 360 : 400,
     };
     selected.forEach((f, i) => {
       const slot = area.w / selected.length;
@@ -85,30 +98,70 @@ export function layoutSlide(
         figureId: f.id,
       });
     });
-    els.push(
-      textElement(
-        s.bullets
-          .slice(0, portrait ? 1 : full ? 2 : 4)
-          .map((x) => "• " + x)
-          .join(full ? "\n" : "\n\n"),
+    if (denseTable) {
+      const note = textElement(
+        "完整大表 · 分析见讲稿；汇报时建议拆分关键区域",
         72,
-        portrait ? 600 : full ? 565 : 195,
-        full ? 1136 : 465,
-        portrait ? 50 : full ? 80 : 400,
-        portrait ? 20 : full ? 24 : 28,
-      ),
-    );
+        635,
+        1136,
+        24,
+        16,
+      );
+      note.themeRole = "muted";
+      els.push(note);
+    } else if (full) {
+      // A figure slide has room for two short findings; retain full detail in notes.
+      const available = portrait ? 58 : 80,
+        y = portrait ? 595 : 550;
+      const lines: string[] = [];
+      for (const point of s.bullets) {
+        const next = [...lines, "• " + point].join("\n");
+        if (lines.length >= 2 || !fitsText(next, 1136, available, 24)) break;
+        lines.push("• " + point);
+      }
+      if (lines.length)
+        els.push(textElement(lines.join("\n"), 72, y, 1136, available, 24));
+      if (lines.length < s.bullets.length && !portrait) {
+        const note = textElement("更多分析见讲稿", 72, 635, 1136, 24, 16);
+        note.themeRole = "muted";
+        els.push(note);
+      }
+    } else {
+      els.push(textElement(bodyText, 72, 190, 465, 410, 28));
+    }
   } else {
-    els.push(
-      textElement(
-        s.bullets.map((x) => "• " + x).join("\n\n"),
-        80,
-        190,
-        1110,
-        405,
-        32,
-      ),
-    );
+    const content = s.bullets.map((x) => "• " + x).join("\n\n");
+    let font = 32;
+    while (font > 28 && !fitsText(content, 1110, 440, font)) font -= 2;
+    if (fitsText(content, 1110, 440, font))
+      els.push(textElement(content, 80, 185, 1110, 440, font));
+    else {
+      // Use two columns before reducing type below the readable minimum.
+      let cut = 1,
+        best = Infinity;
+      for (let i = 1; i < s.bullets.length; i++) {
+        const heights = [s.bullets.slice(0, i), s.bullets.slice(i)].map((xs) =>
+          textHeight(xs.map((x) => "• " + x).join("\n\n"), 535, 28),
+        );
+        const score = Math.max(...heights);
+        if (score < best) {
+          best = score;
+          cut = i;
+        }
+      }
+      [s.bullets.slice(0, cut), s.bullets.slice(cut)].forEach((xs, i) =>
+        els.push(
+          textElement(
+            xs.map((x) => "• " + x).join("\n\n"),
+            72 + i * 590,
+            185,
+            535,
+            440,
+            28,
+          ),
+        ),
+      );
+    }
   }
   const sources = [
     ...new Set([
@@ -151,24 +204,7 @@ export function slideIssues(s: Slide) {
     if (e.type === "image" && !e.assetPath) issues.push("图片文件缺失");
     if (e.type === "text") {
       const font = e.fontSize || 28;
-      const lines = (e.text || "")
-        .split("\n")
-        .reduce(
-          (n, line) =>
-            n +
-            Math.max(
-              1,
-              Math.ceil(
-                [...line].reduce(
-                  (sum, c) => sum + (/[\u2e80-\uffff]/.test(c) ? 1 : 0.55),
-                  0,
-                ) /
-                  (e.w / font),
-              ),
-            ),
-          0,
-        );
-      if (lines * font * 1.25 > e.h + 5)
+      if (textHeight(e.text || "", e.w, font) > e.h + 1)
         issues.push("文字可能溢出，请减少内容或扩大文本框");
     }
   }

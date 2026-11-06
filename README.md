@@ -8,7 +8,7 @@
 - Anna App name：**Paper2Slides**
 - slug：`paper2slides-ai`，命名空间：`@xingkai-song/paper2slides-ai`
 - staging开发者控制台：<https://staging.anna.partners/developer?app=257>
-- 候选版本：`1.0.2`；公开上架状态见[验证记录](docs/VALIDATION.md)。
+- 候选版本：`1.0.3`；上线状态见[发布记录](docs/RELEASE-STATUS.md)。
 
 ## 产品流程
 
@@ -56,18 +56,24 @@ anna-app dev --slug paper2slides-ai --bundle bundle --storage aps \
 CLI 0.1.63没有 `--llm real` 参数；登录后的默认模式即真实模型桥接。实测平台文件桶不允许localhost跨域PUT，所以完整文件上传／恢复／下载验收必须在staging工作草稿或候选版本中完成。
 
 ```bash
-anna-app apps cut 1.0.2 --account https://staging.anna.partners
+anna-app apps cut 1.0.4 --account https://staging.anna.partners
 anna-app apps submit-review --account https://staging.anna.partners
 anna-app apps status paper2slides-ai --account https://staging.anna.partners --json
 # 等待平台审核通过后：
-anna-app apps release 1.0.2 --account https://staging.anna.partners
+anna-app apps release 1.0.4 --account https://staging.anna.partners
 ```
 
-版本号应高于已存在版本。`push`仅上传工作草稿，`cut`创建不可变版本，`submit-review`送审，`release`上架。平台可能在审核通过时直接发布；以实际 `PUBLISHED` 状态为准。
+以上1.0.4是下一版本示例；当前1.0.3已固定并在审核，审核通过后发布现有版本时使用 `anna-app apps release 1.0.3 --account https://staging.anna.partners`。版本号应高于已存在版本。`push`仅上传工作草稿，`cut`创建不可变版本，`submit-review`送审，`release`上架。平台可能在审核通过时直接发布；以实际 `PUBLISHED` 状态为准。
 
 控制台：<https://staging.anna.partners/developer>
 
 不要提交 `~/.config/anna/credentials.json`、PAT、浏览器会话或 `.anna/` 身份缓存。`manifest.json`中允许的R2源来自实测平台文件地址，部署到其他环境时应检查并更新。
+
+## 当前模型与测试
+
+所有文本和图表图片调用均明确指定 `xiaomi/mimo-v2.5`，关闭可选推理，按实际返回记录Token与CU。已有项目缓存不会因模型配置变化自动重做。
+
+本轮31项单元测试、6项端到端测试及构建通过。真实三篇论文基线和修改后的复测范围、耗时、用量与已知限制见 [测试基线](docs/qa/2026-11-06/README.md) 和 [修改复测](docs/qa/2026-11-06/fix-report.md)。
 
 ## 架构
 
@@ -84,7 +90,7 @@ anna-app apps release 1.0.2 --account https://staging.anna.partners
 
 扫描件OCR、自动重绘图表、字符级富文本、公式转可编辑公式、动画和多人协作暂不支持。PDF阅读顺序与视觉定位依赖版式，复杂布局需人工核验。视觉模型不可用时保留基于图注的AI推荐，用户手动框选。平台宿主下载之外还提供主动保存文件按钮，兼容浏览器阻止自动下载的情况。PPTX字体未嵌入，打开后的字体和换行可能因系统而异。
 
-当前平台状态：1.0.2 已提交审核（`pending_review`），尚未公开上架。GitHub Actions 因账号计费锁定未启动，本机验证均已通过，详见[验证记录](docs/VALIDATION.md)。
+最近核验的平台状态：1.0.3 已提交审核（`pending_review`），尚未公开上架。GitHub Actions 因账号计费锁定未启动，本机验证均已通过，详见[验证记录](docs/VALIDATION.md)。
 
 编辑器预览（本地合成示例）：
 
